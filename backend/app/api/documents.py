@@ -14,7 +14,7 @@ from sse_starlette.sse import EventSourceResponse
 import structlog
 
 from app.db import get_db
-from app.deps import CurrentUser, get_current_user
+from app.deps import CurrentUser, OptionalUser, get_current_user
 from app.models import Document, Page
 from app.services.ingest import ingest_single_document, ingest_zip_archive
 from app.services.storage import storage_service
@@ -210,7 +210,7 @@ async def get_document(
 async def get_page_image(
     doc_id: str,
     page_no: int,
-    user: CurrentUser,
+    user: OptionalUser,
     variant: str = Query("restored", pattern="^(original|restored|binary|no_stamp)$"),
     db: AsyncSession = Depends(get_db),
 ):
@@ -249,7 +249,7 @@ async def get_page_image(
 @router.get("/{doc_id}/events")
 async def document_events(
     doc_id: str,
-    user: CurrentUser,
+    user: OptionalUser,
     db: AsyncSession = Depends(get_db),
 ):
     """Server-Sent Events (SSE) live pipeline progress stream."""

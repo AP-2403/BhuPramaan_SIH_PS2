@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -18,6 +18,8 @@ from app.models import User
 import bcrypt
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
 
 
 def hash_password(password: str) -> str:
@@ -74,6 +76,30 @@ async def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+async def get_current_user_optional(
+    token_header: Annotated[Optional[str], Depends(oauth2_scheme_optional)] = None,
+    token_query: Optional[str] = Query(None, alias="token"),
+    db: AsyncSession = Depends(get_db),
+) -> Optional[User]:
+    """Retrieve user if valid token is provided in Authorization header or query parameter."""
+    raw_token = token_header or token_query
+    if not raw_token:
+        return None
+    try:
+        payload = jwt.decode(raw_token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id and payload.get("type") == "access":
+            result = await db.execute(select(User).where(User.id == user_id, User.is_active == True))
+            return result.scalar_one_or_none()
+    except Exception:
+        return None
+    return None
+
+
+OptionalUser = Annotated[Optional[User], Depends(get_current_user_optional)]
+
 
 ROLE_HIERARCHY = {
     "citizen": 0,
