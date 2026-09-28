@@ -56,3 +56,7 @@ Thumbs.db
 *.log
 *.tmp
 *.bak
+*.db
+data/storage/
+backend/data/
+

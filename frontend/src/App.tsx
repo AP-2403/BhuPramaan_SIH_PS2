@@ -1,121 +1,139 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import './i18n'
+import { Header } from './components/Header'
+import { UploadPage } from './pages/UploadPage'
+import { DocumentDetailPage } from './pages/DocumentDetailPage'
+import { DocumentsListPage } from './pages/DocumentsListPage'
+import { LoginPage } from './pages/LoginPage'
+import { getStoredUser, setStoredUser, login, type User } from './api'
 
-function App() {
-  const [count, setCount] = useState(0)
+
+export function App() {
+  const [currentUser, setCurrentUser] = useState<User | null>(getStoredUser())
+
+  // Ensure default demo session is active
+  useEffect(() => {
+    if (!currentUser) {
+      login('tehsil_operator')
+        .then((user) => setCurrentUser(user))
+        .catch(() => {
+          // If backend not reachable, provide fallback dev session
+          const fallbackUser: User = {
+            id: 'dev-operator-1',
+            username: 'tehsil_operator',
+            full_name: 'Tehsil Operator (Demo)',
+            role: 'tehsil_operator',
+            state_code: '09',
+            district_code: '0901',
+            tehsil_code: '090101',
+          }
+          setCurrentUser(fallbackUser)
+          setStoredUser(fallbackUser)
+        })
+    }
+  }, [currentUser])
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+        <Header currentUser={currentUser} onUserChange={setCurrentUser} />
 
-      <div className="ticks"></div>
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Navigate to="/upload" replace />} />
+            <Route path="/upload" element={<UploadPage />} />
+            <Route path="/documents" element={<DocumentsListPage />} />
+            <Route path="/documents/:id" element={<DocumentDetailPage />} />
+            <Route path="/login" element={<LoginPage onLoginSuccess={setCurrentUser} />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            {/* Stubs for later milestones M3-M12 */}
+            <Route
+              path="/review"
+              element={
+                <div className="max-w-4xl mx-auto py-16 px-4 text-center">
+                  <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                    <h2 className="text-xl font-bold text-slate-800">Verification & Review Queue</h2>
+                    <p className="text-slate-500 text-xs mt-1">Scheduled for Milestone M7 (Human-in-the-Loop Verification UI)</p>
+                  </div>
+                </div>
+              }
+            />
+            <Route
+              path="/records"
+              element={
+                <div className="max-w-4xl mx-auto py-16 px-4 text-center">
+                  <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                    <h2 className="text-xl font-bold text-slate-800">Land Records Repository</h2>
+                    <p className="text-slate-500 text-xs mt-1">Scheduled for Milestone M5-M6 (Extracted & Validated Records)</p>
+                  </div>
+                </div>
+              }
+            />
+            <Route
+              path="/map"
+              element={
+                <div className="max-w-4xl mx-auto py-16 px-4 text-center">
+                  <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                    <h2 className="text-xl font-bold text-slate-800">Cadastral GIS Map (Leaflet)</h2>
+                    <p className="text-slate-500 text-xs mt-1">Scheduled for Milestone M9 (Map Parsing & Parcel Linking)</p>
+                  </div>
+                </div>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <div className="max-w-4xl mx-auto py-16 px-4 text-center">
+                  <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                    <h2 className="text-xl font-bold text-slate-800">Executive KPI Dashboard</h2>
+                    <p className="text-slate-500 text-xs mt-1">Scheduled for Milestone M10 (Recharts + 30-Day Historical Trends)</p>
+                  </div>
+                </div>
+              }
+            />
+            <Route
+              path="/learning"
+              element={
+                <div className="max-w-4xl mx-auto py-16 px-4 text-center">
+                  <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                    <h2 className="text-xl font-bold text-slate-800">Model Learning & Lexicon Growth</h2>
+                    <p className="text-slate-500 text-xs mt-1">Scheduled for Milestone M8 (Active Feedback Loop)</p>
+                  </div>
+                </div>
+              }
+            />
+            <Route
+              path="/audit"
+              element={
+                <div className="max-w-4xl mx-auto py-16 px-4 text-center">
+                  <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                    <h2 className="text-xl font-bold text-slate-800">Tamper-Evident Audit Trail</h2>
+                    <p className="text-slate-500 text-xs mt-1">Scheduled for Milestone M11 (SHA-256 Hash Chain Verification)</p>
+                  </div>
+                </div>
+              }
+            />
+          </Routes>
+        </main>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        {/* Footer */}
+        <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-6 text-xs">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-white">BhuLekh-AI</span>
+              <span>· Hackathon Prototype v0.2.0</span>
+              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">
+                Milestone M2
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-500 text-center sm:text-right">
+              Demonstration prototype adhering to DILRMP standards · Synthetic & seed data used for evaluation
+            </div>
+          </div>
+        </footer>
+      </div>
+    </BrowserRouter>
   )
 }
 

@@ -12,9 +12,16 @@ import csv
 import json
 import os
 import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import uuid
 from datetime import date, timedelta
 from pathlib import Path
+
 
 # Add backend to path so we can import app modules
 sys.path.insert(0, str(Path(__file__).parent.parent / "backend"))
@@ -26,17 +33,42 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
-DB_URL = settings.DATABASE_URL_SYNC
+
+def _get_sync_url():
+    url = settings.DATABASE_URL_SYNC
+    if url.startswith("sqlite"):
+        return url
+    try:
+        from urllib.parse import urlparse
+        import socket
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if hostname and hostname not in ("localhost", "127.0.0.1"):
+            socket.gethostbyname(hostname)
+        return url
+    except Exception:
+        db_path = Path(__file__).resolve().parent.parent / "data" / "bhulekh.db"
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        return f"sqlite:///{db_path}"
+
+
+DB_URL = _get_sync_url()
 engine = create_engine(DB_URL, pool_pre_ping=True)
+if DB_URL.startswith("sqlite"):
+    from app.db import Base
+    import app.models  # noqa: F401
+    Base.metadata.create_all(engine)
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 SEEDS_DIR = DATA_DIR / "seeds"
 
 
 def hash_pw(pw: str) -> str:
-    return pwd_context.hash(pw)
+    return bcrypt.hashpw(pw.encode("utf-8")[:72], bcrypt.gensalt()).decode("utf-8")
+
+
 
 
 SEED_USERS = [
