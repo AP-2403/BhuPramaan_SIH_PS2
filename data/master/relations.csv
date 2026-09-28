@@ -1,0 +1,33 @@
+relation_hi,relation_en,abbrev_en,gender,language,notes
+पुत्र,Son of,S/o,M,Hindi,Most common in Devanagari records
+पुत्री,Daughter of,D/o,F,Hindi,
+पत्नी,Wife of,W/o,F,Hindi,
+पति,Husband of,H/o,M,Hindi,
+मृत,Late,Late,N,Hindi,Prefix for deceased
+श्री,Shri,,M,Hindi,Honorific — strip during normalization
+श्रीमती,Smt.,,F,Hindi,Honorific — strip during normalization
+पुत्र,Son of,S/o,M,Devanagari,
+पुत्री,Daughter of,D/o,F,Devanagari,
+# Marathi variants
+पुत्र,Son of,S/o,M,Marathi,Same as Hindi
+मुलगा,Son of,S/o,M,Marathi,
+मुलगी,Daughter of,D/o,F,Marathi,
+पत्नी,Wife of,W/o,F,Marathi,
+# Gujarati variants
+પુત્ર,Son of,S/o,M,Gujarati,
+પુત્રી,Daughter of,D/o,F,Gujarati,
+પત્ની,Wife of,W/o,F,Gujarati,
+# Bengali variants
+পুত্র,Son of,S/o,M,Bengali,
+কন্যা,Daughter of,D/o,F,Bengali,
+স্ত্রী,Wife of,W/o,F,Bengali,
+# Punjabi / Gurmukhi
+ਪੁੱਤਰ,Son of,S/o,M,Punjabi,
+ਪੁੱਤਰੀ,Daughter of,D/o,F,Punjabi,
+ਪਤਨੀ,Wife of,W/o,F,Punjabi,
+# English abbreviations (mixed-script docs)
+S/o,Son of,S/o,M,English,
+D/o,Daughter of,D/o,F,English,
+W/o,Wife of,W/o,F,English,
+H/o,Husband of,H/o,M,English,
+Late,Late (deceased),,N,English,

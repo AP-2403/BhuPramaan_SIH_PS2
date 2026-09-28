@@ -1,0 +1,9 @@
+path,source_url,retrieved_at,licence,sha256,used_for,notes
+data/master/states.csv,hand_curated,2026-09-28,public_domain,,Master data — state list,LGD codes are PLACEHOLDER — verify with lgdirectory.gov.in
+data/master/districts.csv,hand_curated,2026-09-28,public_domain,,Master data — UP districts (full) + Bihar/Rajasthan (partial),PLACEHOLDER codes
+data/master/tehsils.csv,hand_curated,2026-09-28,public_domain,,Master data — tehsils for 5 UP districts,PLACEHOLDER codes
+data/master/villages.csv,hand_curated,2026-09-28,public_domain,,Master data — villages per tehsil,PLACEHOLDER codes
+data/master/land_classes.csv,hand_curated,2026-09-28,public_domain,,Land class vocabulary with variants,Based on standard UP khatauni format
+data/master/units.yaml,hand_curated,2026-09-28,public_domain,,Unit conversion table,State-specific values are PLACEHOLDER — must be verified per state revenue code
+data/master/relations.csv,hand_curated,2026-09-28,public_domain,,Relation words in 6 languages,Hand-curated
+data/SOURCES.md,project_spec,2026-09-28,internal,,Data acquisition rules,Copied from root SOURCES.md per README spec

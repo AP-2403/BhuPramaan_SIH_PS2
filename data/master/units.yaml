@@ -1,0 +1,84 @@
+# units.yaml — Land area unit conversion table
+# base_unit: sq_m (all values are multipliers to get square metres)
+#
+# IMPORTANT: State-specific units (bigha, biswa, etc.) are PLACEHOLDER values.
+# They must be verified against each state's revenue code before real production use.
+# verified: false means this value has NOT been officially verified.
+# See data/MANUAL_STEPS.md for verification steps.
+
+base_unit: sq_m
+
+global:
+  hectare: 10000          # 1 hectare = 10000 sq m  [exact]
+  acre: 4046.8564224      # 1 acre = 4046.856... sq m [exact]
+  sq_ft: 0.09290304       # 1 sq ft = 0.0929... sq m [exact]
+  sq_m: 1                 # base unit
+  sq_yd: 0.83612736       # 1 sq yd [exact]
+  sq_km: 1000000          # 1 sq km [exact]
+
+state_specific:
+  UP:
+    bigha: 2529.29        # PLACEHOLDER — verify against UP Revenue Code / Zamindari Abolition Act
+    biswa: 126.46         # PLACEHOLDER — 1 bigha = 20 biswa (UP) → 2529.29/20
+    biswansi: 6.32        # PLACEHOLDER — 1 biswa = 20 biswansi → 126.46/20
+    dhur: 1.676           # PLACEHOLDER
+    verified: false
+    source_needed: "UP Revenue Code / Zamindari Abolition and Land Reforms Act 1950 — see MANUAL_STEPS.md"
+
+  HR:
+    kanal: 505.857        # PLACEHOLDER — verify against Haryana Revenue Act
+    marla: 25.293         # PLACEHOLDER — 1 kanal = 20 marla → 505.857/20
+    bigha: 2023.43        # PLACEHOLDER (HR bigha ≠ UP bigha)
+    verified: false
+    source_needed: "Haryana Revenue Act — see MANUAL_STEPS.md"
+
+  PB:
+    kanal: 505.857        # PLACEHOLDER — same as HR? Verify.
+    marla: 25.293         # PLACEHOLDER
+    bigha: 2023.43        # PLACEHOLDER
+    verified: false
+    source_needed: "Punjab Land Revenue Act 1887 — see MANUAL_STEPS.md"
+
+  MH:
+    guntha: 101.17        # PLACEHOLDER — verify against Maharashtra Land Revenue Code
+    acre: 4046.8564224    # same globally
+    vigha: 2023.43        # PLACEHOLDER
+    verified: false
+    source_needed: "Maharashtra Land Revenue Code 1966 — see MANUAL_STEPS.md"
+
+  GJ:
+    guntha: 101.17        # PLACEHOLDER
+    vigha: 1618.7         # PLACEHOLDER — Gujarat vigha ≠ MH vigha
+    chatak: 45.1          # PLACEHOLDER
+    verified: false
+    source_needed: "Gujarat Revenue Act — see MANUAL_STEPS.md"
+
+  RJ:
+    bigha: 2529.29        # PLACEHOLDER — RJ bigha may differ; verify
+    biswa: 126.46         # PLACEHOLDER
+    verified: false
+    source_needed: "Rajasthan Tenancy Act / Revenue Act — see MANUAL_STEPS.md"
+
+  BR:
+    dhur: 1.676           # PLACEHOLDER
+    kattha: 125.4         # PLACEHOLDER
+    bigha: 2508.38        # PLACEHOLDER
+    verified: false
+    source_needed: "Bihar Land Revenue Act — see MANUAL_STEPS.md"
+
+# Aliases (common misspellings / alternative spellings → canonical key)
+aliases:
+  hectares: hectare
+  ha: hectare
+  hec: hectare
+  हे: hectare
+  हेक्टेयर: hectare
+  एकड़: acre
+  bighas: bigha
+  बीघा: bigha
+  बिस्वा: biswa
+  बिस्वानसी: biswansi
+  गुंठा: guntha
+  विघा: vigha
+  कनाल: kanal
+  मरला: marla

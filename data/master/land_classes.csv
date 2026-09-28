@@ -1,0 +1,13 @@
+canonical,name_hi,name_en,variants_hi,variants_en,description
+irrigated,सिंचित,Irrigated,"सिंचित,सींचित,सिचिंत","Irrigated,Irrigt.,Irri.",Agricultural land with irrigation access
+unirrigated,असिंचित,Unirrigated,"असिंचित,असिंचिंत,बारानी","Unirrigated,Unirri.,Barani",Rain-fed agricultural land
+barren,बंजर,Barren,"बंजर,बंजड़","Barren,Banjar",Uncultivable barren land
+abadi,आबादी,Abadi,"आबादी,आबाद","Abadi,Settlement",Settlement/habitation land
+cultivable_barren,कृषि योग्य बंजर,Cultivable Barren,"कृषि योग्य बंजर,कृ.यो.बं.","Cultivable Barren,Cult.Barren",Barren but cultivable land
+orchard,बाग,Orchard,"बाग,बागीचा,उद्यान","Orchard,Garden",Land under fruit trees or gardens
+forest,वन,Forest,"वन,जंगल","Forest,Jungle",Forest land
+wasteland,ऊसर,Wasteland,"ऊसर,बीहड़","Usar,Wasteland,Ravine",Saline/alkaline wasteland
+pond,तालाब,Pond,"तालाब,पोखर,सरोवर","Pond,Tank,Lake",Water body (pond/tank)
+govt,सरकारी,Government,"सरकारी,शासकीय,राजकीय","Govt.,Government,State",Government/public land
+road,मार्ग,Road,"मार्ग,सड़क,पथ","Road,Path,Street",Road/path land
+river_bed,नदी,River Bed,"नदी,नाला,नहर","River,Nala,Canal",River bed or canal

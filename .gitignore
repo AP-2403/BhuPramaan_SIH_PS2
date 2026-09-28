@@ -1,0 +1,58 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+*.egg
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Node ──────────────────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/build/
+.next/
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+.env
+# keep .env.example
+
+# ── Data (large; never commit raw/real data) ──────────────────────────────────
+data/raw/
+data/synthetic/
+data/ground_truth/
+data/fonts/
+# Master data IS committed (small, no PII)
+!data/master/
+!data/master/**
+# Seeds ARE committed (no PII)
+!data/seeds/
+!data/seeds/**
+
+# ── ML models ────────────────────────────────────────────────────────────────
+*.pt
+*.pth
+*.onnx
+*.pkl
+*.bin
+models/
+backend/.paddleocr/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.bak
