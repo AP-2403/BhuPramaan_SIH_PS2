@@ -24,9 +24,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="BhuLekh-AI API",
+    title="BhuPramaan API",
     description=(
-        "Intelligent Land Record Digitization and Validation System — "
+        "BhuPramaan (भू-प्रमाण): Intelligent Land Record Digitization and Validation System — "
         "Hackathon Prototype. Real-world accuracy must be validated on actual state data."
     ),
     version="0.1.0",

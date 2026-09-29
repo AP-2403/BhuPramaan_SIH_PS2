@@ -31,11 +31,12 @@ class StorageService:
             from urllib.parse import urlparse
 
             endpoint = settings.MINIO_ENDPOINT
-            # Check host reachability
             host = endpoint.split(":")[0]
-            if host not in ("localhost", "127.0.0.1"):
-                import socket
-                socket.gethostbyname(host)
+            if host in ("minio", "none") or host not in ("localhost", "127.0.0.1"):
+                # Fast local storage fallback when MinIO container is not running
+                self._minio_client = None
+                logger.info("Using local storage fallback", path=str(LOCAL_STORAGE_DIR))
+                return
 
             client = Minio(
                 endpoint,

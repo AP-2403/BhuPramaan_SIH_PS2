@@ -36,8 +36,8 @@ class Settings(BaseSettings):
     # Auth
     JWT_SECRET: str = "change-me-in-production"
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_EXPIRE_MINUTES: int = 30
-    JWT_REFRESH_EXPIRE_DAYS: int = 7
+    JWT_ACCESS_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days for demo session stability
+    JWT_REFRESH_EXPIRE_DAYS: int = 14
 
     # Feature flags
     ENABLE_TROCR: bool = False

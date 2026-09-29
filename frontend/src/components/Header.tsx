@@ -10,46 +10,39 @@ import {
   BarChart3,
   BrainCircuit,
   ShieldCheck,
-  Globe,
   UserCheck,
   LogOut,
   ChevronDown,
+  Play,
 } from 'lucide-react'
 import { login, removeAuthToken, type User } from '../api'
+import { ROLES, getRoleDefaultRoute, isRouteAllowedForRole } from '../roles'
 
 interface HeaderProps {
   currentUser: User | null
   onUserChange: (user: User | null) => void
+  onStartTour?: () => void
 }
 
-const DEMO_ROLES = [
-  { username: 'tehsil_operator', label: 'Tehsil Operator', role: 'tehsil_operator', scope: 'LKO (090101)' },
-  { username: 'verifier', label: 'Revenue Verifier', role: 'verifier', scope: 'Lucknow (0901)' },
-  { username: 'district_officer', label: 'District Officer', role: 'district_officer', scope: 'Lucknow (0901)' },
-  { username: 'state_officer', label: 'State Officer', role: 'state_officer', scope: 'UP (09)' },
-  { username: 'auditor', label: 'Auditor', role: 'auditor', scope: 'All-State' },
-  { username: 'admin', label: 'Admin', role: 'admin', scope: 'System' },
-  { username: 'citizen', label: 'Citizen', role: 'citizen', scope: 'Public' },
-]
+const DEMO_ROLES = Object.values(ROLES)
 
-export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange }) => {
+export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange, onStartTour }) => {
   const { t, i18n } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const [showRoleDropdown, setShowRoleDropdown] = useState(false)
   const [switching, setSwitching] = useState(false)
 
-  const toggleLanguage = () => {
-    const nextLang = i18n.language === 'hi' ? 'en' : 'hi'
-    i18n.changeLanguage(nextLang)
-  }
+  const isLoginPage = location.pathname === '/login'
 
-  const handleSwitchRole = async (username: string) => {
+  const handleSwitchRole = async (roleKey: string) => {
     setSwitching(true)
     try {
-      const user = await login(username)
+      const user = await login(roleKey)
       onUserChange(user)
       setShowRoleDropdown(false)
+      // Navigate to the role's primary landing workspace
+      navigate(getRoleDefaultRoute(user.role))
     } catch (err) {
       console.error('Failed to switch role', err)
     } finally {
@@ -63,7 +56,8 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange }) => 
     navigate('/login')
   }
 
-  const navLinks = [
+  // Master list of navigation links
+  const allNavLinks = [
     { to: '/upload', label: t('nav.upload'), icon: FileUp },
     { to: '/documents', label: t('nav.documents'), icon: FileText },
     { to: '/review', label: t('nav.review'), icon: CheckSquare },
@@ -74,63 +68,110 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange }) => 
     { to: '/audit', label: t('nav.audit'), icon: ShieldCheck },
   ]
 
+  // Filter navigation links based on user's active RBAC role
+  const visibleNavLinks = allNavLinks.filter((link) =>
+    isRouteAllowedForRole(link.to, currentUser?.role)
+  )
+
+  const isHindi = i18n.language === 'hi'
+  const currentRoleCfg = currentUser?.role ? ROLES[currentUser.role] : null
+
   return (
     <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50 shadow-md">
       {/* Top Ministry Banner */}
-      <div className="bg-slate-950 px-4 py-1 border-b border-slate-800/80 text-[11px] text-slate-400 flex justify-between items-center">
+      <div className="bg-slate-950 px-4 py-1.5 border-b border-slate-800/80 text-[11px] text-slate-400 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          <span className="font-medium text-slate-300">
-            राजस्व विभाग / Department of Revenue & Land Records
+          <span className="font-semibold text-slate-200">
+            {t('common.ministry')}
           </span>
-          <span className="text-slate-600">|</span>
-          <span className="text-amber-400 font-mono">DILRMP-Compliant Prototype</span>
+          <span className="text-slate-600 hidden sm:inline">|</span>
+          <span className="text-amber-400 font-mono hidden sm:inline">
+            {t('common.dilrmpStandard')}
+          </span>
         </div>
 
-        {/* Demo Helper Switcher & Lang Toggle */}
+        {/* Demo Helper Switcher & Clean Unilingual Toggle */}
         <div className="flex items-center gap-3">
           {/* Quick Demo Role Dropdown */}
           <div className="relative">
             <button
               onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-medium transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-medium transition-colors cursor-pointer text-xs"
             >
               <UserCheck className="w-3 h-3" />
-              <span>Demo Role: {currentUser ? currentUser.role : 'Switch'}</span>
+              <span>
+                {t('common.activeRole')}: {currentRoleCfg ? (isHindi ? currentRoleCfg.titleHindi : currentRoleCfg.label) : currentUser ? currentUser.role : 'Select Role'}
+              </span>
               <ChevronDown className="w-2.5 h-2.5 opacity-70" />
             </button>
 
             {showRoleDropdown && (
-              <div className="absolute right-0 mt-1 w-56 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl py-1 z-50 text-xs">
-                <div className="px-3 py-1.5 font-semibold text-slate-400 border-b border-slate-800">
-                  Switch Active Demo Role:
+              <div className="absolute right-0 mt-1 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1 z-50 text-xs">
+                <div className="px-3 py-1.5 font-bold text-slate-400 border-b border-slate-800 text-[10px] uppercase tracking-wider">
+                  {t('common.switchRole')}:
                 </div>
                 {DEMO_ROLES.map((r) => (
                   <button
-                    key={r.username}
-                    onClick={() => handleSwitchRole(r.username)}
+                    key={r.role}
+                    onClick={() => handleSwitchRole(r.role)}
                     disabled={switching}
-                    className={`w-full text-left px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 ${
-                      currentUser?.username === r.username ? 'bg-amber-500/10 text-amber-400 font-semibold' : 'text-slate-200'
+                    className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-slate-800 transition-colors cursor-pointer ${
+                      currentUser?.role === r.role
+                        ? 'bg-amber-500/15 text-amber-400 font-bold'
+                        : 'text-slate-200'
                     }`}
                   >
-                    <span>{r.label}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">{r.scope}</span>
+                    <div>
+                      <div className="font-semibold">{isHindi ? r.titleHindi : r.label}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">{r.scope}</div>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
+                      {r.defaultRoute}
+                    </span>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Language Toggle */}
-          <button
-            onClick={toggleLanguage}
-            className="flex items-center gap-1 px-2 py-0.5 rounded hover:bg-slate-800 text-slate-300 font-medium transition-colors"
-            title="Toggle Language"
-          >
-            <Globe className="w-3 h-3 text-amber-400" />
-            <span>{i18n.language === 'hi' ? 'English' : 'हिन्दी'}</span>
-          </button>
+          {/* Auto Demo Tour Launch Button */}
+          {onStartTour && (
+            <button
+              onClick={onStartTour}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-[11px] shadow-md shadow-amber-500/25 transition-all cursor-pointer animate-flicker shimmer-sweep"
+              title={t('tour.launchBtn')}
+            >
+              <Play className="w-3 h-3 fill-current" />
+              <span>{t('tour.launchBtn')}</span>
+            </button>
+          )}
+
+          {/* Clean Segmented Language Switcher [ English | हिन्दी ] */}
+          <div className="flex items-center bg-slate-900 border border-slate-700/80 rounded-lg p-0.5 text-xs">
+            <button
+              onClick={() => i18n.changeLanguage('en')}
+              className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                !isHindi
+                  ? 'bg-amber-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Switch to English"
+            >
+              English
+            </button>
+            <button
+              onClick={() => i18n.changeLanguage('hi')}
+              className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                isHindi
+                  ? 'bg-amber-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="हिन्दी में बदलें"
+            >
+              हिन्दी
+            </button>
+          </div>
         </div>
       </div>
 
@@ -139,72 +180,89 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange }) => 
         <div className="flex items-center justify-between h-16">
           {/* Logo & Portal Identity */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              <span className="text-white font-extrabold text-xl tracking-tighter">भू</span>
+            <div className="w-11 h-11 rounded-full bg-amber-500/10 border border-amber-400/40 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform overflow-hidden p-0.5 animate-flicker">
+              <img
+                src="/logo.png"
+                alt="BhuPramaan Logo"
+                className="w-full h-full object-contain drop-shadow"
+              />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xl font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors">
-                  BhuLekh-AI
+                <span className="text-xl font-extrabold tracking-tight text-white group-hover:text-amber-400 transition-colors">
+                  {t('common.appName')}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                  Gov-Tech
+                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
+                  {t('common.landVerified')}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 -mt-0.5 font-hindi">
-                बुद्धिमान भू-अभिलेख डिजिटलीकरण प्रणाली
+              <p className="text-xs text-slate-400 -mt-0.5">
+                {t('common.appSubtitle')}
               </p>
             </div>
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => {
-              const Icon = link.icon
-              const isActive = location.pathname.startsWith(link.to)
-              return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                    isActive
-                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{link.label}</span>
-                </Link>
-              )
-            })}
-          </nav>
+          {/* Navigation Links: Hidden on Sign In page */}
+          {!isLoginPage && (
+            <nav className="hidden md:flex items-center gap-1">
+              {visibleNavLinks.map((link) => {
+                const Icon = link.icon
+                const isActive = location.pathname.startsWith(link.to)
+                return (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                      isActive
+                        ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-500/10 font-semibold'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-400' : ''}`} />
+                    <span>{link.label}</span>
+                  </Link>
+                )
+              })}
+            </nav>
+          )}
 
-          {/* User Profile Pill or Login */}
+          {/* User Profile Pill or Login button: Clean view on /login */}
           <div className="flex items-center gap-3">
-            {currentUser ? (
+            {!isLoginPage && currentUser ? (
               <div className="flex items-center gap-2">
                 <div className="text-right hidden sm:block">
                   <div className="text-xs font-semibold text-slate-200">{currentUser.full_name}</div>
-                  <div className="text-[10px] text-amber-400 font-mono uppercase tracking-wide">
-                    {currentUser.role} {currentUser.district_code && `· ${currentUser.district_code}`}
+                  <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase tracking-wider border ${
+                        currentRoleCfg?.badgeClass || 'bg-slate-800 text-slate-300 border-slate-700'
+                      }`}
+                    >
+                      {currentRoleCfg ? (isHindi ? currentRoleCfg.titleHindi : currentRoleCfg.label) : currentUser.role}
+                    </span>
+                    {currentUser.district_code && (
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        {currentUser.district_code}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="p-2 rounded-lg bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition-colors"
+                  className="p-2 rounded-lg bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition-colors cursor-pointer"
                   title={t('nav.logout')}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
-            ) : (
+            ) : !isLoginPage ? (
               <Link
                 to="/login"
                 className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold text-xs shadow-md shadow-amber-500/20 transition-all"
               >
-                Sign In
+                {isHindi ? 'लॉग इन' : 'Sign In'}
               </Link>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

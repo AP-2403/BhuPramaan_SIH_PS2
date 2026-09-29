@@ -18,8 +18,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import structlog
 
 from app.models import AuditLog, Document, Page
+from app.services.doctype import doctype_router
+from app.services.layout import layout_analyzer
 from app.services.quality import assess_quality
 from app.services.restore import restore_document_image
+from app.services.script import detect_script
 from app.services.storage import storage_service
 
 logger = structlog.get_logger()
@@ -275,13 +278,40 @@ async def ingest_single_document(
         storage_service.upload_bytes(bin_key, bin_png.tobytes(), "image/png")
         storage_service.upload_bytes(nostamp_key, nostamp_png.tobytes(), "image/png")
 
-        # Layout metadata storing quality flags and metrics
+        # 3. Layout analysis on restored page
+        layout_res = layout_analyzer.analyze(restored_bgr)
+
+        # 4. Script detection
+        script_res = detect_script(image=restored_bgr, text=text_layer)
+
+        # 5. Document Type Classification
+        page_doc_type = doctype_router.classify(
+            image=restored_bgr,
+            layout=layout_res,
+            text=text_layer,
+            expected_type=meta.get("expected_doc_type") or meta.get("doc_type"),
+        )
+
+        # Layout metadata storing quality flags, metrics, detected regions, tables, and cells
         layout_meta = {
             "quality_flags": flags,
             "metrics": metrics,
             "steps_applied": restored_res["steps_applied"],
             "has_pdf_text": bool(text_layer),
             "pdf_text": text_layer,
+            "regions": layout_res["regions"],
+            "tables": layout_res["tables"],
+            "has_table": layout_res["has_table"],
+            "has_map": layout_res["has_map"],
+            "has_stamp": layout_res["has_stamp"],
+            "has_signature": layout_res["has_signature"],
+            "has_handwritten_block": layout_res["has_handwritten_block"],
+            "table_cells_count": layout_res["table_cells_count"],
+            "script": script_res["primary_script"],
+            "script_confidence": script_res["confidence"],
+            "script_distribution": script_res["distribution"],
+            "doc_type": page_doc_type["doc_type"],
+            "doc_type_confidence": page_doc_type["confidence"],
         }
 
         page_record = Page(
@@ -307,22 +337,20 @@ async def ingest_single_document(
             "flags": flags,
             "metrics": metrics,
             "restored_key": rest_key,
+            "has_table": layout_res["has_table"],
+            "has_map": layout_res["has_map"],
+            "table_cells_count": layout_res["table_cells_count"],
+            "regions_count": len(layout_res["regions"]),
+            "doc_type": page_doc_type["doc_type"],
+            "script": script_res["primary_script"],
         })
 
     avg_quality = round(total_quality_score / len(page_data_list), 3)
 
-    # Guess or use expected doc_type
-    expected_doc_type = meta.get("doc_type") or meta.get("expected_doc_type")
-    if not expected_doc_type:
-        fname_lower = filename.lower()
-        if "mutation" in fname_lower or "b_" in fname_lower:
-            expected_doc_type = "mutation"
-        elif "map" in fname_lower or "cadastral" in fname_lower or "c_" in fname_lower:
-            expected_doc_type = "cadastral_map"
-        elif "khatauni" in fname_lower or "khasra" in fname_lower or "a_" in fname_lower:
-            expected_doc_type = "khatauni"
-        else:
-            expected_doc_type = "unknown"
+    # Document-level classification from first page or voting
+    first_page_meta = pages_records[0].layout_json or {}
+    classified_doc_type = first_page_meta.get("doc_type", "unknown")
+    classified_script = first_page_meta.get("script", "devanagari")
 
     doc = Document(
         id=doc_id,
@@ -331,8 +359,8 @@ async def ingest_single_document(
         mime=mime,
         storage_key=doc_storage_key,
         pages=len(pages_records),
-        doc_type=expected_doc_type,
-        script="devanagari",
+        doc_type=classified_doc_type,
+        script=classified_script,
         state_code=meta.get("state_code", "09"),
         district_code=meta.get("district_code", "0901"),
         tehsil_code=meta.get("tehsil_code"),
@@ -359,7 +387,7 @@ async def ingest_single_document(
             "pages": len(pages_records),
             "quality_score": avg_quality,
             "quality_flags": list(all_flags),
-            "doc_type": expected_doc_type,
+            "doc_type": classified_doc_type,
         },
         prev_hash="",
         hash=hashlib.sha256(f"upload:{doc_id}:{sha256}".encode()).hexdigest(),
@@ -372,7 +400,7 @@ async def ingest_single_document(
         "batch_id": batch_id,
         "filename": filename,
         "pages": len(pages_records),
-        "doc_type": expected_doc_type,
+        "doc_type": classified_doc_type,
         "status": "uploaded",
         "quality_score": avg_quality,
         "quality_flags": sorted(list(all_flags)),

@@ -6,14 +6,14 @@ import { listDocuments } from '../api'
 import { QualityBadge } from '../components/QualityBadge'
 
 export const DocumentsListPage: React.FC = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const isHindi = i18n.language === 'hi'
   const [documents, setDocuments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [page] = useState(1)
   const [, setTotal] = useState(0)
-
 
   const loadData = () => {
     setLoading(true)
@@ -47,7 +47,9 @@ export const DocumentsListPage: React.FC = () => {
             {t('nav.documents')}
           </h1>
           <p className="text-slate-500 text-xs mt-0.5">
-            Repository of digitized and scanned land records across all jurisdictions
+            {isHindi
+              ? 'समस्त प्रशासनिक प्रभागों के डिजिटलीकृत एवं स्कैन किए गए भू-अभिलेखों का भंडार'
+              : 'Repository of digitized and scanned land records across all jurisdictions'}
           </p>
         </div>
 
@@ -56,7 +58,7 @@ export const DocumentsListPage: React.FC = () => {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-md transition-all self-start sm:self-auto"
         >
           <Upload className="w-3.5 h-3.5" />
-          <span>Upload New Scan</span>
+          <span>{isHindi ? 'नया स्कैन अपलोड करें' : 'Upload New Scan'}</span>
         </Link>
       </div>
 
@@ -66,7 +68,7 @@ export const DocumentsListPage: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by filename or ID..."
+            placeholder={isHindi ? 'फ़ाइल नाम अथवा पहचान संख्या से खोजें...' : 'Search by filename or ID...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && loadData()}
@@ -80,17 +82,17 @@ export const DocumentsListPage: React.FC = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 rounded-xl px-3 py-2"
           >
-            <option value="">All Statuses</option>
-            <option value="uploaded">Uploaded</option>
-            <option value="processing">Processing</option>
-            <option value="needs_review">Needs Review</option>
-            <option value="accepted">Accepted</option>
+            <option value="">{isHindi ? 'सभी स्थितियाँ' : 'All Statuses'}</option>
+            <option value="uploaded">{isHindi ? 'अपलोड हुआ' : 'Uploaded'}</option>
+            <option value="processing">{isHindi ? 'प्रसंस्करण जारी' : 'Processing'}</option>
+            <option value="needs_review">{isHindi ? 'समीक्षा अपेक्षित' : 'Needs Review'}</option>
+            <option value="accepted">{isHindi ? 'स्वीकृत' : 'Accepted'}</option>
           </select>
 
           <button
             onClick={loadData}
             className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600"
-            title="Refresh"
+            title={isHindi ? 'ताज़ा करें' : 'Refresh'}
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -102,24 +104,24 @@ export const DocumentsListPage: React.FC = () => {
         {loading ? (
           <div className="py-16 text-center text-slate-400 text-xs">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-500" />
-            Loading documents...
+            {isHindi ? 'दस्तावेज़ लोड हो रहे हैं...' : 'Loading documents...'}
           </div>
         ) : documents.length === 0 ? (
           <div className="py-16 text-center text-slate-400 text-xs">
             <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-            No documents found matching the filter criteria.
+            {isHindi ? 'कोई दस्तावेज़ नहीं मिला।' : 'No documents found matching the filter criteria.'}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
                 <tr>
-                  <th className="px-5 py-3.5">Document</th>
-                  <th className="px-5 py-3.5">Type</th>
-                  <th className="px-5 py-3.5">Quality</th>
-                  <th className="px-5 py-3.5">Status</th>
-                  <th className="px-5 py-3.5">Uploaded</th>
-                  <th className="px-5 py-3.5 text-right">Actions</th>
+                  <th className="px-5 py-3.5">{isHindi ? 'दस्तावेज़' : 'Document'}</th>
+                  <th className="px-5 py-3.5">{isHindi ? 'प्रकार' : 'Type'}</th>
+                  <th className="px-5 py-3.5">{isHindi ? 'गुणवत्ता' : 'Quality'}</th>
+                  <th className="px-5 py-3.5">{isHindi ? 'स्थिति' : 'Status'}</th>
+                  <th className="px-5 py-3.5">{isHindi ? 'अपलोड तिथि' : 'Uploaded'}</th>
+                  <th className="px-5 py-3.5 text-right">{isHindi ? 'कार्यवाही' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -131,7 +133,7 @@ export const DocumentsListPage: React.FC = () => {
                         <div>
                           <div className="font-semibold text-slate-800">{doc.filename}</div>
                           <div className="text-[10px] text-slate-400 font-mono">
-                            ID: {doc.id.slice(0, 8)}... · {doc.pages || 1} page(s)
+                            ID: {doc.id.slice(0, 8)}... · {doc.pages || 1} {isHindi ? 'पृष्ठ' : 'page(s)'}
                           </div>
                         </div>
                       </div>
@@ -149,12 +151,12 @@ export const DocumentsListPage: React.FC = () => {
 
                     <td className="px-5 py-3.5">
                       <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        {doc.status}
+                        {doc.status === 'accepted' ? (isHindi ? 'स्वीकृत' : 'Accepted') : doc.status === 'needs_review' ? (isHindi ? 'समीक्षा अपेक्षित' : 'Needs Review') : doc.status}
                       </span>
                     </td>
 
                     <td className="px-5 py-3.5 text-slate-500 text-[11px]">
-                      {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'N/A'}
+                      {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString(isHindi ? 'hi-IN' : 'en-US') : 'N/A'}
                     </td>
 
                     <td className="px-5 py-3.5 text-right">
@@ -163,7 +165,7 @@ export const DocumentsListPage: React.FC = () => {
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-[11px] shadow-sm transition-all"
                       >
                         <Eye className="w-3 h-3 text-amber-400" />
-                        <span>Inspect & Compare</span>
+                        <span>{isHindi ? 'निरीक्षण व तुलना' : 'Inspect & Compare'}</span>
                       </Link>
                     </td>
                   </tr>

@@ -36,6 +36,7 @@ export interface DocumentDetail {
   filename: string
   mime?: string
   doc_type: string
+  script?: string
   status: string
   quality_score: number
   quality_flags: string[]
@@ -74,8 +75,36 @@ export function setStoredUser(user: User) {
   localStorage.setItem('bhulekh_user', JSON.stringify(user))
 }
 
-export async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = getAuthToken()
+let refreshPromise: Promise<string> | null = null
+
+export async function ensureFreshToken(): Promise<string> {
+  if (refreshPromise) return refreshPromise
+  refreshPromise = (async () => {
+    try {
+      const stored = getStoredUser()
+      const username = stored?.username || 'tehsil_operator'
+      const formData = new URLSearchParams()
+      formData.append('username', username)
+      formData.append('password', 'Demo@1234')
+
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString(),
+      })
+      if (!res.ok) throw new Error('Auto-login failed')
+      const data = await res.json()
+      setAuthToken(data.access_token)
+      return data.access_token as string
+    } finally {
+      refreshPromise = null
+    }
+  })()
+  return refreshPromise
+}
+
+export async function apiRequest<T>(endpoint: string, options: RequestInit = {}, isRetry: boolean = false): Promise<T> {
+  let token = getAuthToken()
   const headers = new Headers(options.headers || {})
 
   if (token && !headers.has('Authorization')) {
@@ -86,6 +115,16 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
     ...options,
     headers,
   })
+
+  if (response.status === 401 && !isRetry && endpoint !== '/auth/login') {
+    try {
+      token = await ensureFreshToken()
+      headers.set('Authorization', `Bearer ${token}`)
+      return apiRequest<T>(endpoint, { ...options, headers }, true)
+    } catch {
+      removeAuthToken()
+    }
+  }
 
   if (!response.ok) {
     let errMsg = `Request failed: ${response.statusText}`
@@ -133,7 +172,8 @@ export async function uploadDocument(
     tehsil_code?: string
     village_code?: string
     expected_doc_type?: string
-  }
+  },
+  isRetry: boolean = false
 ): Promise<any> {
   const formData = new FormData()
   files.forEach((f) => formData.append('files', f))
@@ -144,7 +184,7 @@ export async function uploadDocument(
   if (metadata.village_code) formData.append('village_code', metadata.village_code)
   if (metadata.expected_doc_type) formData.append('expected_doc_type', metadata.expected_doc_type)
 
-  const token = getAuthToken()
+  let token = getAuthToken()
   const headers = new Headers()
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
@@ -153,6 +193,15 @@ export async function uploadDocument(
     headers,
     body: formData,
   })
+
+  if (response.status === 401 && !isRetry) {
+    try {
+      await ensureFreshToken()
+      return uploadDocument(files, metadata, true)
+    } catch {
+      removeAuthToken()
+    }
+  }
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
@@ -190,6 +239,62 @@ export async function getDocument(docId: string): Promise<DocumentDetail> {
 
 export function getPageImageUrl(docId: string, pageNo: number = 1, variant: 'original' | 'restored' | 'binary' | 'no_stamp' = 'restored'): string {
   const token = getAuthToken()
-  const tokenParam = token ? `&token=${token}` : ''
+  const tokenParam = token && token !== 'null' && token !== 'undefined' ? `&token=${encodeURIComponent(token)}` : ''
   return `${API_BASE}/documents/${docId}/pages/${pageNo}/image?variant=${variant}${tokenParam}`
 }
+
+export interface ExtractionData {
+  document_id: string
+  filename: string
+  doc_type: string
+  status: string
+  extraction: {
+    doc_type: string
+    header: Record<string, any>
+    fields: Array<{
+      id: string
+      path: string
+      label: string
+      value: string
+      raw_value: string
+      confidence: number
+      bbox: number[]
+      engine_votes: {
+        paddle?: string
+        tesseract?: string
+        agreement?: number
+        note?: string
+      }
+      status: string
+    }>
+    rows?: Array<any>
+    overall_confidence: number
+  }
+  validation: {
+    status: string
+    total_rules: number
+    passed_count: number
+    failed_count: number
+    confidence_flags: Array<{
+      field: string
+      value: string
+      conf: number
+      reason: string
+    }>
+    flagged_fields: string[]
+    rules: Array<{
+      rule_id: string
+      name: string
+      category: string
+      severity: string
+      passed: boolean
+      message: string
+      field_paths: string[]
+    }>
+  }
+}
+
+export async function getDocumentExtraction(docId: string): Promise<ExtractionData> {
+  return apiRequest<ExtractionData>(`/documents/${docId}/extraction`)
+}
+

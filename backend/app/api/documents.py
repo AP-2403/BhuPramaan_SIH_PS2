@@ -192,6 +192,7 @@ async def get_document(
         "filename": doc.filename,
         "mime": doc.mime,
         "doc_type": doc.doc_type,
+        "script": doc.script or "devanagari",
         "status": doc.status,
         "quality_score": doc.quality_score,
         "quality_flags": sorted(list(all_flags)),
@@ -244,6 +245,43 @@ async def get_page_image(
             except Exception:
                 pass
         raise HTTPException(status_code=404, detail=f"Image variant '{variant}' not found")
+
+
+@router.get("/{doc_id}/pages/{page_no}/layout")
+async def get_page_layout(
+    doc_id: str,
+    page_no: int,
+    user: OptionalUser,
+    db: AsyncSession = Depends(get_db),
+):
+    """Retrieve detected layout regions, tables, cells, and script for a page."""
+    query = select(Page).where(Page.document_id == doc_id, Page.page_no == page_no)
+    res = await db.execute(query)
+    page = res.scalar_one_or_none()
+    if not page:
+        raise HTTPException(status_code=404, detail="Page not found")
+
+    layout_data = page.layout_json or {}
+    return {
+        "document_id": doc_id,
+        "page_no": page_no,
+        "width": page.width,
+        "height": page.height,
+        "regions": layout_data.get("regions", []),
+        "tables": layout_data.get("tables", []),
+        "has_table": layout_data.get("has_table", False),
+        "has_map": layout_data.get("has_map", False),
+        "has_stamp": layout_data.get("has_stamp", False),
+        "has_signature": layout_data.get("has_signature", False),
+        "has_handwritten_block": layout_data.get("has_handwritten_block", False),
+        "table_cells_count": layout_data.get("table_cells_count", 0),
+        "script": layout_data.get("script", "devanagari"),
+        "script_confidence": layout_data.get("script_confidence", 0.90),
+        "doc_type": layout_data.get("doc_type", "unknown"),
+        "doc_type_confidence": layout_data.get("doc_type_confidence", 0.85),
+        "quality_score": page.quality_score,
+        "quality_flags": layout_data.get("quality_flags", []),
+    }
 
 
 @router.get("/{doc_id}/events")
@@ -321,3 +359,51 @@ async def reprocess_document(
         "status": "processing",
         "message": "Reprocessing started",
     }
+
+
+@router.get("/{doc_id}/extraction")
+async def get_document_extraction(
+    doc_id: str,
+    user: OptionalUser,
+    db: AsyncSession = Depends(get_db),
+):
+    """Retrieve structured extraction, dual-engine OCR votes, confidence scores, and 17 validation rules."""
+    from app.services.extract.pipeline import extract_document_fields
+    from app.services.validate.engine import validate_extraction
+
+    doc_res = await db.execute(select(Document).where(Document.id == doc_id))
+    doc = doc_res.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    metadata = {
+        "state_code": doc.state_code,
+        "district_code": doc.district_code,
+        "tehsil_code": doc.tehsil_code,
+        "village_code": doc.village_code,
+    }
+
+    extraction_data = extract_document_fields(
+        doc_id=doc.id,
+        doc_type=doc.doc_type or "khatauni",
+        filename=doc.filename or "",
+        metadata=metadata,
+        quality_score=doc.quality_score or 0.85,
+    )
+
+    validation_data = validate_extraction(extraction_data)
+
+    # Automatically transition status to needs_review or accepted
+    if doc.status in ("uploaded", "processing"):
+        doc.status = validation_data["status"]
+        await db.commit()
+
+    return {
+        "document_id": doc.id,
+        "filename": doc.filename,
+        "doc_type": doc.doc_type,
+        "status": doc.status,
+        "extraction": extraction_data,
+        "validation": validation_data,
+    }
+

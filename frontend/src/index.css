@@ -65,3 +65,133 @@
   color: #991b1b;
   border: 1px solid #fecaca;
 }
+
+/* ── Light Effects & Subtle Animations for Demo Video ───────────────────── */
+@keyframes gentle-flicker {
+  0%, 100% { opacity: 0.95; }
+  25% { opacity: 0.85; filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.4)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.6)); }
+  75% { opacity: 0.9; filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.45)); }
+}
+
+@keyframes cyan-pulse {
+  0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.3)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 18px rgba(6, 182, 212, 0.65)); }
+}
+
+@keyframes sweep-light {
+  0% { transform: translateX(-100%); }
+  50%, 100% { transform: translateX(200%); }
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-flicker {
+  animation: gentle-flicker 4s ease-in-out infinite;
+}
+
+.animate-cyan-pulse {
+  animation: cyan-pulse 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float-gentle 5s ease-in-out infinite;
+}
+
+.shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 100%
+  );
+  animation: sweep-light 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(51, 65, 85, 0.45);
+}
+
+.glass-light {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.glow-border-amber {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 15px -3px rgba(245, 158, 11, 0.25);
+}
+
+.glow-border-cyan {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 15px -3px rgba(6, 182, 212, 0.25);
+}
+
+/* Subtle Hero Banner Card with Ambient Image */
+.hero-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+}
+
+.hero-panel-dark {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.4);
+}
+
+/* Subtle Ambient Glow Orbs */
+.light-orb-gold {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, transparent 70%);
+  filter: blur(28px);
+  pointer-events: none;
+  animation: float-gentle 7s ease-in-out infinite;
+}
+
+.light-orb-cyan {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.16) 0%, transparent 70%);
+  filter: blur(28px);
+  pointer-events: none;
+  animation: float-gentle 6s ease-in-out infinite reverse;
+}
+
+/* Interactive card hover lift with subtle shadow */
+.card-hover-glow {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -6px rgba(245, 158, 11, 0.15), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+}
+

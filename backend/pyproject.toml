@@ -105,3 +105,8 @@ testpaths = ["app/tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+

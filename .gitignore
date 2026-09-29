@@ -46,17 +46,23 @@ data/fonts/
 models/
 backend/.paddleocr/
 
-# ── OS ────────────────────────────────────────────────────────────────────────
+# ── OS & Editors ─────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 *.swp
 *.swo
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 
-# ── Misc ──────────────────────────────────────────────────────────────────────
+# ── Misc & Scratch ───────────────────────────────────────────────────────────
 *.log
 *.tmp
 *.bak
 *.db
 data/storage/
 backend/data/
+Gemini_Generated_Image*
+recordings/
 

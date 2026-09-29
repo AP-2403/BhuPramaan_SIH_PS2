@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { ZoomIn, ZoomOut, RotateCcw, Columns, SplitSquareVertical } from 'lucide-react'
+import { ZoomIn, ZoomOut, RotateCcw, Columns, SplitSquareVertical, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
+import { getAuthToken } from '../api'
 
 interface BeforeAfterSliderProps {
   originalUrl: string
@@ -23,14 +24,86 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   const [afterVariant, setAfterVariant] = useState<'restored' | 'binary' | 'no_stamp'>('restored')
   const [viewMode, setViewMode] = useState<'slider' | 'sideBySide'>('slider')
   const [zoomLevel, setZoomLevel] = useState<number>(1.0)
+  const [reloadKey, setReloadKey] = useState<number>(0)
+
+  // Loading & error states for both images
+  const [afterLoaded, setAfterLoaded] = useState<boolean>(false)
+  const [origLoaded, setOrigLoaded] = useState<boolean>(false)
+  const [userDismissed, setUserDismissed] = useState<boolean>(false)
+  const [loadError, setLoadError] = useState<boolean>(false)
+  const [blobUrls, setBlobUrls] = useState<{ orig?: string; after?: string }>({})
+
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const activeAfterUrl =
+  // Direct ref check functions to capture cached images instantly on DOM mount
+  const checkOrigImg = useCallback((el: HTMLImageElement | null) => {
+    if (el && (el.complete || el.naturalWidth > 0)) {
+      setOrigLoaded(true)
+    }
+  }, [])
+
+  const checkAfterImg = useCallback((el: HTMLImageElement | null) => {
+    if (el && (el.complete || el.naturalWidth > 0)) {
+      setAfterLoaded(true)
+    }
+  }, [])
+
+  const activeAfterRawUrl =
     afterVariant === 'binary' && binaryUrl
       ? binaryUrl
       : afterVariant === 'no_stamp' && noStampUrl
       ? noStampUrl
       : restoredUrl
+
+  const origSrc = blobUrls.orig || `${originalUrl}${reloadKey ? `&_t=${reloadKey}` : ''}`
+  const afterSrc = blobUrls.after || `${activeAfterRawUrl}${reloadKey ? `&_t=${reloadKey}` : ''}`
+
+  // Safety timer to guarantee spinner never hangs if browser served image from memory cache
+  useEffect(() => {
+    const safetyTimer = setTimeout(() => {
+      setAfterLoaded(true)
+      setOrigLoaded(true)
+    }, 250)
+
+    return () => clearTimeout(safetyTimer)
+  }, [activeAfterRawUrl, originalUrl, reloadKey])
+
+  // Blob fetch fallback if direct <img> encounters any browser loading issue
+  const handleImageError = useCallback(async () => {
+    try {
+      const token = getAuthToken()
+      const headers: Record<string, string> = {}
+      if (token) headers['Authorization'] = `Bearer ${token}`
+
+      const [resOrig, resAfter] = await Promise.all([
+        fetch(originalUrl, { headers }).then((r) => (r.ok ? r.blob() : null)),
+        fetch(activeAfterRawUrl, { headers }).then((r) => (r.ok ? r.blob() : null)),
+      ])
+
+      const newBlobUrls: { orig?: string; after?: string } = {}
+      if (resOrig) newBlobUrls.orig = URL.createObjectURL(resOrig)
+      if (resAfter) newBlobUrls.after = URL.createObjectURL(resAfter)
+
+      if (newBlobUrls.orig && newBlobUrls.after) {
+        setBlobUrls(newBlobUrls)
+        setAfterLoaded(true)
+        setOrigLoaded(true)
+        setLoadError(false)
+        return
+      }
+    } catch {
+      // Fallback failed
+    }
+    setLoadError(true)
+  }, [originalUrl, activeAfterRawUrl])
+
+  const handleRetry = () => {
+    setLoadError(false)
+    setAfterLoaded(false)
+    setOrigLoaded(false)
+    setBlobUrls({})
+    setReloadKey((k) => k + 1)
+  }
 
   const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return
@@ -61,6 +134,8 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       window.removeEventListener('touchend', handleMouseUp)
     }
   }, [])
+
+  const isFullyLoaded = afterLoaded || origLoaded || userDismissed
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
@@ -150,7 +225,40 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       </div>
 
       {/* Main Comparison Canvas */}
-      <div className="relative bg-slate-900 flex-1 min-h-[500px] overflow-auto flex items-center justify-center p-4">
+      <div className="relative bg-slate-900 flex-1 min-h-[520px] overflow-auto flex items-center justify-center p-4">
+        {/* Loading Spinner / Skeleton Overlay */}
+        {!isFullyLoaded && !loadError && (
+          <div
+            onClick={() => setUserDismissed(true)}
+            className="absolute inset-0 z-30 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-slate-300 gap-3 cursor-pointer select-none transition-opacity"
+            title="Click to dismiss"
+          >
+            <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            <p className="text-xs font-medium">Loading high-resolution document scans...</p>
+            <span className="text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700">
+              Click anywhere to dismiss
+            </span>
+          </div>
+        )}
+
+        {/* Load Error Card */}
+        {loadError && (
+          <div className="z-30 bg-slate-800 border border-slate-700 rounded-2xl p-8 text-center max-w-md mx-auto shadow-2xl">
+            <AlertCircle className="w-10 h-10 text-amber-400 mx-auto mb-3" />
+            <h4 className="text-sm font-bold text-white mb-1">Image Loading Interrupted</h4>
+            <p className="text-xs text-slate-400 mb-4">
+              Unable to load document image preview. This can occur if the backend was restarting or local proxy reconnected.
+            </p>
+            <button
+              onClick={handleRetry}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-md transition-all cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry Loading Image</span>
+            </button>
+          </div>
+        )}
+
         {viewMode === 'sideBySide' ? (
           <div className="grid grid-cols-2 gap-4 w-full max-w-6xl">
             {/* Left: Original */}
@@ -159,10 +267,17 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 Original (Degraded)
               </div>
               <div
-                className="overflow-hidden rounded-lg shadow-xl border border-slate-700 bg-black flex items-center justify-center"
+                className="overflow-hidden rounded-lg shadow-xl border border-slate-700 bg-black flex items-center justify-center min-h-[400px] min-w-[280px]"
                 style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top center' }}
               >
-                <img src={originalUrl} alt={`Original ${altText}`} className="max-h-[600px] object-contain" />
+                <img
+                  ref={checkOrigImg}
+                  src={origSrc}
+                  alt={`Original ${altText}`}
+                  onLoad={() => setOrigLoaded(true)}
+                  onError={handleImageError}
+                  className="max-h-[600px] object-contain"
+                />
               </div>
             </div>
 
@@ -172,10 +287,17 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 {afterVariant === 'binary' ? 'Sauvola Binarized' : 'Restored (Deskew + CLAHE)'}
               </div>
               <div
-                className="overflow-hidden rounded-lg shadow-xl border border-slate-700 bg-black flex items-center justify-center"
+                className="overflow-hidden rounded-lg shadow-xl border border-slate-700 bg-black flex items-center justify-center min-h-[400px] min-w-[280px]"
                 style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top center' }}
               >
-                <img src={activeAfterUrl} alt={`Restored ${altText}`} className="max-h-[600px] object-contain" />
+                <img
+                  ref={checkAfterImg}
+                  src={afterSrc}
+                  alt={`Restored ${altText}`}
+                  onLoad={() => setAfterLoaded(true)}
+                  onError={handleImageError}
+                  className="max-h-[600px] object-contain"
+                />
               </div>
             </div>
           </div>
@@ -187,7 +309,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
             onMouseMove={handleMouseMove}
             onTouchStart={() => setIsDragging(true)}
             onTouchMove={handleTouchMove}
-            className="relative select-none cursor-ew-resize overflow-hidden rounded-lg shadow-2xl border border-slate-700"
+            className="relative select-none cursor-ew-resize overflow-hidden rounded-lg shadow-2xl border border-slate-700 min-h-[450px] min-w-[320px] md:min-w-[480px] bg-slate-950 flex items-center justify-center"
             style={{
               transform: `scale(${zoomLevel})`,
               transformOrigin: 'center center',
@@ -195,8 +317,11 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           >
             {/* Bottom Layer: Restored (After) */}
             <img
-              src={activeAfterUrl}
+              ref={checkAfterImg}
+              src={afterSrc}
               alt={`Restored ${altText}`}
+              onLoad={() => setAfterLoaded(true)}
+              onError={handleImageError}
               className="block max-h-[650px] w-auto max-w-full pointer-events-none"
             />
 
@@ -208,8 +333,11 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
               }}
             >
               <img
-                src={originalUrl}
+                ref={checkOrigImg}
+                src={origSrc}
                 alt={`Original ${altText}`}
+                onLoad={() => setOrigLoaded(true)}
+                onError={handleImageError}
                 className="block max-h-[650px] w-auto max-w-full pointer-events-none"
               />
             </div>
