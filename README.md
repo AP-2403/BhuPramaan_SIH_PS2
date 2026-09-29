@@ -10,15 +10,27 @@
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.11-009688.svg?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite%20%7C%20TS-61DAFB.svg?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![PostGIS](https://img.shields.io/badge/GIS-PostgreSQL%2016%20%2B%20PostGIS%203-336791.svg?style=for-the-badge&logo=postgresql)](https://postgis.net/)
+[![Vercel](https://img.shields.io/badge/Deployment-Vercel%20Live-black.svg?style=for-the-badge&logo=vercel)](https://bhupramaansihps2.vercel.app/login)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](#license)
 
 **A Next-Generation AI Pipeline for Automated Revenue Document Ingestion, Dual-Engine OCR Voting, Cadastral Vector GIS Alignment, and Human-in-the-Loop Active Learning.**
 
-[Demo Video](#-demo-video--walkthrough) • [Key Innovations](#-key-innovations) • [Architecture](#-system-architecture) • [Benchmarks](#-benchmark-performance) • [Quick Start](#-quick-start-guide) • [Tour Guide](#-interactive-demo-tour-19-steps)
+[Live Deployment](#-live-deployment--access-links) • [Demo Video](#-demo-video--walkthrough) • [Key Innovations](#-key-innovations) • [Architecture](#-system-architecture) • [Benchmarks](#-benchmark-performance) • [Quick Start](#-quick-start-guide) • [Tour Guide](#-interactive-demo-tour-19-steps)
 
 ---
 
 </div>
+
+## 🌐 Live Deployment & Access Links
+
+| Component | Platform | Direct Access Link | Status |
+| :--- | :--- | :--- | :--- |
+| **BhuPramaan Web Application** | **Vercel** | [https://bhupramaansihps2.vercel.app/login](https://bhupramaansihps2.vercel.app/login) | `🟢 Live / Operational` |
+| **Interactive Guided Tour (19 Steps)** | **Vercel** | [https://bhupramaansihps2.vercel.app/login](https://bhupramaansihps2.vercel.app/login) | `🟢 Ready` |
+| **FastAPI REST API & Docs** | **Cloud / Local** | `http://127.0.0.1:8000/docs` | `🟢 Available (Swagger UI)` |
+| **GitHub Source Code** | **GitHub** | [AP-2403/BhuPramaan_SIH_PS2](https://github.com/AP-2403/BhuPramaan_SIH_PS2) | `🟢 Public` |
+
+---
 
 ## 🎥 Demo Video & Walkthrough
 
