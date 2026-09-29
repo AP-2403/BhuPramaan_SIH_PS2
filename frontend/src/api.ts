@@ -275,12 +275,103 @@ export async function listDocuments(params: {
   if (params.page) qs.set('page', params.page.toString())
   if (params.size) qs.set('size', params.size.toString())
 
-  return apiRequest<{
-    items: any[]
-    total: number
-    page: number
-    size: number
-  }>(`/documents?${qs.toString()}`)
+  try {
+    return await apiRequest<{
+      items: any[]
+      total: number
+      page: number
+      size: number
+    }>(`/documents?${qs.toString()}`)
+  } catch {
+    // Standalone demo documents fallback for when backend is offline or on Vercel preview
+    const demoItems = [
+      {
+        id: '54b54348-0219-416e-ba88-9ed8dabe54da',
+        filename: '01_Khatauni_RoR_Format_CH41.pdf',
+        mime: 'application/pdf',
+        doc_type: 'khatauni',
+        script: 'devanagari',
+        status: 'needs_review',
+        quality_score: 0.88,
+        quality_flags: ['low_contrast', 'faded_ink'],
+        pages: 1,
+        state_code: '09',
+        district_code: '0901',
+        tehsil_code: '090101',
+        village_code: '09010104',
+        uploaded_at: '2026-09-28T16:53:25Z',
+      },
+      {
+        id: '9d7e98c6-f31c-494a-ad97-8fc569edea79',
+        filename: '02_Mutation_Register_Fard_Badr.pdf',
+        mime: 'application/pdf',
+        doc_type: 'mutation',
+        script: 'devanagari',
+        status: 'needs_review',
+        quality_score: 0.82,
+        quality_flags: ['faded_ink', 'bleed_through'],
+        pages: 1,
+        state_code: '09',
+        district_code: '0901',
+        tehsil_code: '090101',
+        village_code: '09010101',
+        uploaded_at: '2026-09-28T14:10:22Z',
+      },
+      {
+        id: 'ef0c68fc-d0d7-4fb5-84e2-82a64467f42b',
+        filename: '04_Cadastral_Map_Sheet_Shajra.pdf',
+        mime: 'application/pdf',
+        doc_type: 'cadastral_map',
+        script: 'devanagari',
+        status: 'needs_review',
+        quality_score: 0.91,
+        quality_flags: ['fold_marks'],
+        pages: 1,
+        state_code: '09',
+        district_code: '0901',
+        tehsil_code: '090101',
+        village_code: '09010102',
+        uploaded_at: '2026-09-28T16:53:06Z',
+      },
+      {
+        id: '7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d',
+        filename: '03_Sale_Deed_Registry_Bilingual.pdf',
+        mime: 'application/pdf',
+        doc_type: 'sale_deed',
+        script: 'mixed',
+        status: 'accepted',
+        quality_score: 0.94,
+        quality_flags: [],
+        pages: 2,
+        state_code: '09',
+        district_code: '0901',
+        tehsil_code: '090101',
+        village_code: '09010104',
+        uploaded_at: '2026-09-27T11:20:00Z',
+      },
+    ]
+
+    let filtered = demoItems
+    if (params.status) {
+      filtered = filtered.filter((d) => d.status === params.status)
+    }
+    if (params.doc_type) {
+      filtered = filtered.filter((d) => d.doc_type === params.doc_type)
+    }
+    if (params.search) {
+      const q = params.search.toLowerCase()
+      filtered = filtered.filter(
+        (d) => d.filename.toLowerCase().includes(q) || d.id.toLowerCase().includes(q)
+      )
+    }
+
+    return {
+      items: filtered,
+      total: filtered.length,
+      page: params.page || 1,
+      size: params.size || 15,
+    }
+  }
 }
 
 export async function getDocument(docId: string): Promise<DocumentDetail> {

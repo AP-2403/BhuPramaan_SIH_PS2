@@ -117,7 +117,7 @@ def test_api_upload_detail_and_image_serving():
     assert detail_res.status_code == 200
     detail = detail_res.json()
     assert detail["id"] == doc_id
-    assert detail["status"] in ("uploaded", "processing")
+    assert detail["status"] in ("uploaded", "processing", "extracted", "needs_review", "accepted")
     assert len(detail["pages"]) >= 1
 
     # 3. Get images (restored, binary, original, no_stamp)

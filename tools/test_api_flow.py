@@ -1,6 +1,10 @@
 import urllib.request
 import urllib.parse
 import json
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 def run_test():
     # 1. Login
