@@ -127,6 +127,11 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {},
       }
     }
 
+    const contentType = response.headers.get('content-type') || ''
+    if (contentType.includes('text/html')) {
+      throw new Error(`Endpoint ${endpoint} returned HTML (SPA fallback), backend is offline or standalone.`)
+    }
+
     if (!response.ok) {
       let errMsg = `Request failed: ${response.statusText}`
       try {
@@ -138,7 +143,7 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {},
       throw new Error(errMsg)
     }
 
-    return response.json()
+    return await response.json()
   } catch (err: any) {
     // If endpoint is layout and backend is unreachable (e.g. standalone Vercel preview), return demo layout
     if (endpoint.includes('/layout')) {
