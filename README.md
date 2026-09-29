@@ -11,11 +11,12 @@
 [![React](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite%20%7C%20TS-61DAFB.svg?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![PostGIS](https://img.shields.io/badge/GIS-PostgreSQL%2016%20%2B%20PostGIS%203-336791.svg?style=for-the-badge&logo=postgresql)](https://postgis.net/)
 [![Vercel](https://img.shields.io/badge/Deployment-Vercel%20Live-black.svg?style=for-the-badge&logo=vercel)](https://bhupramaansihps2.vercel.app/login)
+[![YouTube](https://img.shields.io/badge/YouTube-Video%20Demo-red.svg?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=8hZgkcB8mU8)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](#license)
 
 **A Next-Generation AI Pipeline for Automated Revenue Document Ingestion, Dual-Engine OCR Voting, Cadastral Vector GIS Alignment, and Human-in-the-Loop Active Learning.**
 
-[Live Deployment](#-live-deployment--access-links) • [Demo Video](#-demo-video--walkthrough) • [Key Innovations](#-key-innovations) • [Architecture](#-system-architecture) • [Benchmarks](#-benchmark-performance) • [Quick Start](#-quick-start-guide) • [Tour Guide](#-interactive-demo-tour-19-steps)
+[Live Deployment](#-live-deployment--access-links) • [YouTube Demo Video](https://www.youtube.com/watch?v=8hZgkcB8mU8) • [Key Innovations](#-key-innovations) • [Architecture](#-system-architecture) • [Benchmarks](#-benchmark-performance) • [Quick Start](#-quick-start-guide) • [Tour Guide](#-interactive-demo-tour-19-steps)
 
 ---
 
@@ -31,14 +32,13 @@
 
 ## 🎥 Demo Video & Walkthrough
 
-> **[▶️ Click Here to Watch the Official BhuPramaan Demonstration Video](https://github.com/AP-2403/BhuPramaan_SIH_PS2)**  
-> *(Replace link above with your YouTube / Google Drive / Loom video URL)*
+> **[▶️ Click Here to Watch the Official BhuPramaan Demonstration Video on YouTube](https://www.youtube.com/watch?v=8hZgkcB8mU8)**  
 
 <div align="center">
 
-[![BhuPramaan Video Walkthrough](docs/bhupramaan_human_in_loop.jpg)](https://github.com/AP-2403/BhuPramaan_SIH_PS2)
+[![BhuPramaan Video Walkthrough](https://img.youtube.com/vi/8hZgkcB8mU8/maxresdefault.jpg)](https://www.youtube.com/watch?v=8hZgkcB8mU8)
 
-*Click the preview banner above to view the end-to-end BhuPramaan demonstration.*
+*Click the preview banner above to view the end-to-end BhuPramaan demonstration video on YouTube.*
 
 </div>
 
