@@ -42,22 +42,6 @@
 
 </div>
 
-### ⏱️ Video Timestamps & Guided Highlights
-
-| Timestamp | Module / Stage | Highlight Description |
-| :--- | :--- | :--- |
-| **00:00 - 00:45** | **Executive Intro** | Background of DILRMP land digitization challenges & SIH PS-2 objectives |
-| **00:45 - 01:40** | **Multi-Role Ingestion** | Tehsil Operator drag-and-drop batch upload with real-time SSE neural pipeline timeline |
-| **01:40 - 02:45** | **Neural Image Restoration** | Before/After interactive slider (Sauvola binarization, CLAHE contrast, deskew & denoising) |
-| **02:45 - 03:50** | **Layout & Script Detection** | Automated region masks (tables, stamps, signatures, margin notes, Devanagari script detection) |
-| **03:50 - 05:00** | **Dual OCR Voting Ensemble** | PaddleOCR + Tesseract 5 spatial IoU voting with confidence calibration |
-| **05:00 - 06:15** | **17 Statutory Rules Audit** | Automated detection of arithmetic mismatches, share fraction errors, and fraudulent transfers |
-| **06:15 - 07:30** | **Human-in-the-Loop Verifier** | Split verification workspace with bounding-box sync, keyboard shortcuts, and review queue |
-| **07:30 - 08:45** | **Cadastral Vector GIS** | PostGIS parcel polygon extraction, geodesic area validation, and map overlay |
-| **08:45 - 09:35** | **Title Chain & Ownership Graph** | Directed Acyclic Graph (DAG) tracing parcel lineage and flagging broken/fraudulent links |
-| **09:35 - 10:20** | **Active Learning Feedback** | Character confusion matrix adaptation, lexicon expansion, and retraining curve (v1 → v2) |
-| **10:20 - 11:00** | **Audit Trail & Conclusion** | SHA-256 tamper-evident hash chain verification and mock LRMS synchronization |
-
 ---
 
 ## 🏛️ Smart India Hackathon (SIH) — Project Overview
