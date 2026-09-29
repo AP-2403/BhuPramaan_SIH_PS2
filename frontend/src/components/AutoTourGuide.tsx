@@ -16,6 +16,7 @@ import {
   Play,
   Square,
   Mic,
+  Volume2,
 } from 'lucide-react'
 import { login, type User } from '../api'
 
@@ -233,6 +234,40 @@ export const AutoTourGuide: React.FC<AutoTourGuideProps> = ({
 
   const checkTargetIntervalRef = useRef<number | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const gainNodeRef = useRef<GainNode | null>(null)
+  const [gainBoost, setGainBoost] = useState<number>(1.5)
+
+  // ── Web Audio API Gain Node initialization ────────────────────────────────
+  const setupWebAudio = useCallback((audio: HTMLAudioElement) => {
+    try {
+      if (!audioCtxRef.current) {
+        const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+        if (AudioCtxClass) {
+          const ctx = new AudioCtxClass()
+          const gain = ctx.createGain()
+          gain.gain.value = gainBoost
+          const source = ctx.createMediaElementSource(audio)
+          source.connect(gain)
+          gain.connect(ctx.destination)
+          audioCtxRef.current = ctx
+          gainNodeRef.current = gain
+        }
+      }
+      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume()
+      }
+    } catch {
+      // Audio element already wired to media element source or context active
+    }
+  }, [gainBoost])
+
+  // Update gain node whenever user changes boost setting
+  useEffect(() => {
+    if (gainNodeRef.current && audioCtxRef.current) {
+      gainNodeRef.current.gain.setValueAtTime(gainBoost, audioCtxRef.current.currentTime)
+    }
+  }, [gainBoost])
 
   // ── Local audio player ───────────────────────────────────────────────────
   const playAudio = useCallback((stepIdx: number | 'complete') => {
@@ -244,6 +279,7 @@ export const AutoTourGuide: React.FC<AutoTourGuideProps> = ({
     audio.pause()
     audio.src = src
     audio.load()
+    setupWebAudio(audio)
     setAudioMissing(false)
     const playPromise = audio.play()
     if (playPromise !== undefined) {
@@ -257,7 +293,7 @@ export const AutoTourGuide: React.FC<AutoTourGuideProps> = ({
     }
     audio.onended = () => setIsPlaying(false)
     audio.onerror = () => { setIsPlaying(false); setAudioMissing(true) }
-  }, [])
+  }, [setupWebAudio])
 
   const stopAudio = useCallback(() => {
     audioRef.current?.pause()
@@ -730,6 +766,19 @@ export const AutoTourGuide: React.FC<AutoTourGuideProps> = ({
                     title="Replay voiceover from beginning"
                   >
                     <RotateCcw className="w-3 h-3 text-amber-400" />
+                  </button>
+
+                  {/* Volume Booster Toggle (100% -> 150% -> 200% -> 250%) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGainBoost((prev) => (prev === 1.0 ? 1.5 : prev === 1.5 ? 2.0 : prev === 2.0 ? 2.5 : 1.0))
+                    }}
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-amber-300 hover:text-amber-200 hover:bg-slate-800 text-[10px] font-semibold transition-colors cursor-pointer border border-amber-500/30 bg-amber-500/10"
+                    title={`Audio Boost: ${Math.round(gainBoost * 100)}% (Click to cycle 100%, 150%, 200%, 250%)`}
+                  >
+                    <Volume2 className="w-2.5 h-2.5 text-amber-400" />
+                    <span className="font-mono text-[9px]">{Math.round(gainBoost * 100)}%</span>
                   </button>
 
                   <button
