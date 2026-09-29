@@ -36,9 +36,9 @@
 
 <div align="center">
 
-[![BhuPramaan Video Walkthrough](https://img.youtube.com/vi/8hZgkcB8mU8/maxresdefault.jpg)](https://www.youtube.com/watch?v=8hZgkcB8mU8)
+[![BhuPramaan Video Walkthrough](docs/youtube_player_preview.jpg)](https://www.youtube.com/watch?v=8hZgkcB8mU8)
 
-*Click the preview banner above to view the end-to-end BhuPramaan demonstration video on YouTube.*
+*Click the player preview above to watch the full demonstration on YouTube.*
 
 </div>
 
