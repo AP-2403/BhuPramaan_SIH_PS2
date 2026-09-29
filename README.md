@@ -26,9 +26,6 @@
 | Component | Platform | Direct Access Link | Status |
 | :--- | :--- | :--- | :--- |
 | **BhuPramaan Web Application** | **Vercel** | [https://bhupramaansihps2.vercel.app/login](https://bhupramaansihps2.vercel.app/login) | `🟢 Live / Operational` |
-| **Interactive Guided Tour (19 Steps)** | **Vercel** | [https://bhupramaansihps2.vercel.app/login](https://bhupramaansihps2.vercel.app/login) | `🟢 Ready` |
-| **FastAPI REST API & Docs** | **Cloud / Local** | `http://127.0.0.1:8000/docs` | `🟢 Available (Swagger UI)` |
-| **GitHub Source Code** | **GitHub** | [AP-2403/BhuPramaan_SIH_PS2](https://github.com/AP-2403/BhuPramaan_SIH_PS2) | `🟢 Public` |
 
 ---
 
