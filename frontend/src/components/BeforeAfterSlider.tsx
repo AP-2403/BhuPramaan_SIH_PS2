@@ -1,6 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { ZoomIn, ZoomOut, RotateCcw, Columns, SplitSquareVertical, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
-import { getAuthToken } from '../api'
 
 interface BeforeAfterSliderProps {
   originalUrl: string
@@ -26,27 +25,24 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   const [zoomLevel, setZoomLevel] = useState<number>(1.0)
   const [reloadKey, setReloadKey] = useState<number>(0)
 
-  // Loading & error states for both images
-  const [afterLoaded, setAfterLoaded] = useState<boolean>(false)
-  const [origLoaded, setOrigLoaded] = useState<boolean>(false)
+  // Loading states
+  const [afterLoaded, setAfterLoaded] = useState<boolean>(true)
+  const [origLoaded, setOrigLoaded] = useState<boolean>(true)
   const [userDismissed, setUserDismissed] = useState<boolean>(false)
-  const [loadError, setLoadError] = useState<boolean>(false)
-  const [blobUrls, setBlobUrls] = useState<{ orig?: string; after?: string }>({})
+  const [origFailed, setOrigFailed] = useState<boolean>(false)
+  const [afterFailed, setAfterFailed] = useState<boolean>(false)
+  const loadError = false
 
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Direct ref check functions to capture cached images instantly on DOM mount
-  const checkOrigImg = useCallback((el: HTMLImageElement | null) => {
-    if (el && (el.complete || el.naturalWidth > 0)) {
-      setOrigLoaded(true)
-    }
-  }, [])
-
-  const checkAfterImg = useCallback((el: HTMLImageElement | null) => {
-    if (el && (el.complete || el.naturalWidth > 0)) {
-      setAfterLoaded(true)
-    }
-  }, [])
+  // Pre-rendered local fallback images
+  const fallbackOrig = '/demo_pdfs/khatauni_original.jpg'
+  const fallbackAfter =
+    afterVariant === 'binary'
+      ? '/demo_pdfs/khatauni_binary.jpg'
+      : afterVariant === 'no_stamp'
+      ? '/demo_pdfs/khatauni_no_stamp.jpg'
+      : '/demo_pdfs/khatauni_restored.jpg'
 
   const activeAfterRawUrl =
     afterVariant === 'binary' && binaryUrl
@@ -55,60 +51,21 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       ? noStampUrl
       : restoredUrl
 
-  const origSrc = blobUrls.orig || `${originalUrl}${reloadKey ? `&_t=${reloadKey}` : ''}`
-  const afterSrc = blobUrls.after || `${activeAfterRawUrl}${reloadKey ? `&_t=${reloadKey}` : ''}`
-
-  // Safety timer to guarantee spinner never hangs if browser served image from memory cache
+  // Reset error flags if input URLs change
   useEffect(() => {
-    const safetyTimer = setTimeout(() => {
-      setAfterLoaded(true)
-      setOrigLoaded(true)
-    }, 250)
+    setOrigFailed(false)
+  }, [originalUrl, reloadKey])
 
-    return () => clearTimeout(safetyTimer)
-  }, [activeAfterRawUrl, originalUrl, reloadKey])
+  useEffect(() => {
+    setAfterFailed(false)
+  }, [activeAfterRawUrl, afterVariant, reloadKey])
 
-  // Blob fetch fallback if direct <img> encounters any browser loading issue
-  const handleImageError = useCallback(async () => {
-    try {
-      const token = getAuthToken()
-      const headers: Record<string, string> = {}
-      if (token) headers['Authorization'] = `Bearer ${token}`
-
-      const [resOrig, resAfter] = await Promise.all([
-        fetch(originalUrl, { headers }).then((r) => (r.ok ? r.blob() : null)),
-        fetch(activeAfterRawUrl, { headers }).then((r) => (r.ok ? r.blob() : null)),
-      ])
-
-      const newBlobUrls: { orig?: string; after?: string } = {}
-      if (resOrig) newBlobUrls.orig = URL.createObjectURL(resOrig)
-      if (resAfter) newBlobUrls.after = URL.createObjectURL(resAfter)
-
-      if (newBlobUrls.orig && newBlobUrls.after) {
-        setBlobUrls(newBlobUrls)
-        setAfterLoaded(true)
-        setOrigLoaded(true)
-        setLoadError(false)
-        return
-      }
-    } catch {
-      // Fallback failed
-    }
-    // If backend endpoint is unreachable (e.g. standalone Vercel deployment), display demo scan asset
-    setBlobUrls({
-      orig: '/demo_pdfs/01_Khatauni_RoR_Format_CH41.png',
-      after: '/demo_pdfs/01_Khatauni_RoR_Format_CH41.png',
-    })
-    setAfterLoaded(true)
-    setOrigLoaded(true)
-    setLoadError(false)
-  }, [originalUrl, activeAfterRawUrl])
+  const origSrc = origFailed ? fallbackOrig : (originalUrl || fallbackOrig)
+  const afterSrc = afterFailed ? fallbackAfter : (activeAfterRawUrl || fallbackAfter)
 
   const handleRetry = () => {
-    setLoadError(false)
-    setAfterLoaded(false)
-    setOrigLoaded(false)
-    setBlobUrls({})
+    setOrigFailed(false)
+    setAfterFailed(false)
     setReloadKey((k) => k + 1)
   }
 
@@ -278,11 +235,13 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top center' }}
               >
                 <img
-                  ref={checkOrigImg}
                   src={origSrc}
                   alt={`Original ${altText}`}
                   onLoad={() => setOrigLoaded(true)}
-                  onError={handleImageError}
+                  onError={() => {
+                    setOrigFailed(true)
+                    setOrigLoaded(true)
+                  }}
                   className="max-h-[600px] object-contain"
                 />
               </div>
@@ -298,11 +257,13 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top center' }}
               >
                 <img
-                  ref={checkAfterImg}
                   src={afterSrc}
                   alt={`Restored ${altText}`}
                   onLoad={() => setAfterLoaded(true)}
-                  onError={handleImageError}
+                  onError={() => {
+                    setAfterFailed(true)
+                    setAfterLoaded(true)
+                  }}
                   className="max-h-[600px] object-contain"
                 />
               </div>
@@ -324,11 +285,13 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           >
             {/* Bottom Layer: Restored (After) */}
             <img
-              ref={checkAfterImg}
               src={afterSrc}
               alt={`Restored ${altText}`}
               onLoad={() => setAfterLoaded(true)}
-              onError={handleImageError}
+              onError={() => {
+                setAfterFailed(true)
+                setAfterLoaded(true)
+              }}
               className="block max-h-[650px] w-auto max-w-full pointer-events-none"
             />
 
@@ -340,11 +303,13 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
               }}
             >
               <img
-                ref={checkOrigImg}
                 src={origSrc}
                 alt={`Original ${altText}`}
                 onLoad={() => setOrigLoaded(true)}
-                onError={handleImageError}
+                onError={() => {
+                  setOrigFailed(true)
+                  setOrigLoaded(true)
+                }}
                 className="block max-h-[650px] w-auto max-w-full pointer-events-none"
               />
             </div>

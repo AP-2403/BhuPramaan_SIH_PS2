@@ -826,6 +826,7 @@ export const DocumentDetailPage: React.FC = () => {
               <img
                 src={getPageImageUrl(document.id, activePageNo, 'original')}
                 alt="Original"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/demo_pdfs/khatauni_original.jpg' }}
                 className="max-h-[450px] object-contain"
               />
             </div>
@@ -837,6 +838,7 @@ export const DocumentDetailPage: React.FC = () => {
               <img
                 src={getPageImageUrl(document.id, activePageNo, 'restored')}
                 alt="Restored"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/demo_pdfs/khatauni_restored.jpg' }}
                 className="max-h-[450px] object-contain"
               />
             </div>
@@ -848,6 +850,7 @@ export const DocumentDetailPage: React.FC = () => {
               <img
                 src={getPageImageUrl(document.id, activePageNo, 'binary')}
                 alt="Binary"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/demo_pdfs/khatauni_binary.jpg' }}
                 className="max-h-[450px] object-contain"
               />
             </div>
@@ -859,6 +862,7 @@ export const DocumentDetailPage: React.FC = () => {
               <img
                 src={getPageImageUrl(document.id, activePageNo, 'no_stamp')}
                 alt="No Stamp"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/demo_pdfs/khatauni_no_stamp.jpg' }}
                 className="max-h-[450px] object-contain"
               />
             </div>

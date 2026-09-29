@@ -216,6 +216,9 @@ export const LayoutOverlay: React.FC<LayoutOverlayProps> = ({
           <img
             src={imageUrl}
             alt="Page Layout"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = '/demo_pdfs/khatauni_restored.jpg'
+            }}
             className="block max-h-[750px] w-auto max-w-full pointer-events-none"
           />
 

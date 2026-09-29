@@ -322,11 +322,22 @@ export async function getDocument(docId: string): Promise<DocumentDetail> {
 }
 
 export function getPageImageUrl(docId: string, pageNo: number = 1, variant: 'original' | 'restored' | 'binary' | 'no_stamp' = 'restored'): string {
+  // If running standalone (e.g. Vercel deployment without Python backend), serve pre-restored demo document scans
+  const isStandalone = typeof window !== 'undefined' && (
+    window.location.hostname.includes('vercel.app') ||
+    !import.meta.env.VITE_API_URL ||
+    API_BASE === '/api'
+  )
+
+  if (isStandalone) {
+    if (variant === 'original') return '/demo_pdfs/khatauni_original.jpg'
+    if (variant === 'binary') return '/demo_pdfs/khatauni_binary.jpg'
+    if (variant === 'no_stamp') return '/demo_pdfs/khatauni_no_stamp.jpg'
+    return '/demo_pdfs/khatauni_restored.jpg'
+  }
+
   const token = getAuthToken()
   const tokenParam = token && token !== 'null' && token !== 'undefined' ? `&token=${encodeURIComponent(token)}` : ''
-  if (API_BASE.startsWith('http')) {
-    return `${API_BASE}/documents/${docId}/pages/${pageNo}/image?variant=${variant}${tokenParam}`
-  }
   return `${API_BASE}/documents/${docId}/pages/${pageNo}/image?variant=${variant}${tokenParam}`
 }
 
