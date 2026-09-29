@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/bhupramaan_logo.png" alt="BhuPramaan Logo" width="160" />
+<img src="docs/logo.png" alt="BhuPramaan Logo" width="280" />
 
 # BhuPramaan (भू-प्रमाण)
 ### Intelligent Land Record Digitization, Multi-Modal Neural Verification & Cryptographic Validation System
