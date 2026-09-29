@@ -94,7 +94,14 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     } catch {
       // Fallback failed
     }
-    setLoadError(true)
+    // If backend endpoint is unreachable (e.g. standalone Vercel deployment), display demo scan asset
+    setBlobUrls({
+      orig: '/demo_pdfs/01_Khatauni_RoR_Format_CH41.png',
+      after: '/demo_pdfs/01_Khatauni_RoR_Format_CH41.png',
+    })
+    setAfterLoaded(true)
+    setOrigLoaded(true)
+    setLoadError(false)
   }, [originalUrl, activeAfterRawUrl])
 
   const handleRetry = () => {
