@@ -92,6 +92,7 @@ export function getRoleDefaultRoute(role?: string): string {
 }
 
 export function isRouteAllowedForRole(route: string, role?: string): boolean {
+  if (route === '/welcome' || route === '/login') return true
   if (!role || !ROLES[role]) return false
   const allowed = ROLES[role].allowedRoutes
   return allowed.some((r) => route === r || route.startsWith(r + '/'))

@@ -69,12 +69,19 @@ export function App() {
           <Routes>
             <Route
               path="/"
-              element={<Navigate to={getRoleDefaultRoute(currentUser?.role)} replace />}
+              element={
+                currentUser ? (
+                  <Navigate to={getRoleDefaultRoute(currentUser.role)} replace />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
             />
+            <Route path="/welcome" element={<LoginPage onLoginSuccess={setCurrentUser} />} />
+            <Route path="/login" element={<LoginPage onLoginSuccess={setCurrentUser} />} />
             <Route path="/upload" element={<UploadPage />} />
             <Route path="/documents" element={<DocumentsListPage />} />
             <Route path="/documents/:id" element={<DocumentDetailPage />} />
-            <Route path="/login" element={<LoginPage onLoginSuccess={setCurrentUser} />} />
             <Route path="/review" element={<ReviewQueuePage />} />
             <Route path="/records" element={<RecordsPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />

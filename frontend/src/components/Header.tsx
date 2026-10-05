@@ -14,6 +14,7 @@ import {
   LogOut,
   ChevronDown,
   Play,
+  Sparkles,
 } from 'lucide-react'
 import { login, removeAuthToken, type User } from '../api'
 import { ROLES, getRoleDefaultRoute, isRouteAllowedForRole } from '../roles'
@@ -28,6 +29,7 @@ const DEMO_ROLES = Object.values(ROLES)
 
 export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange, onStartTour }) => {
   const { t, i18n } = useTranslation()
+  const isHindi = i18n.language === 'hi'
   const location = useLocation()
   const navigate = useNavigate()
   const [showRoleDropdown, setShowRoleDropdown] = useState(false)
@@ -58,6 +60,7 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange, onSta
 
   // Master list of navigation links
   const allNavLinks = [
+    { to: '/welcome', label: isHindi ? 'पोर्टल स्वागत' : 'Welcome', icon: Sparkles },
     { to: '/upload', label: t('nav.upload'), icon: FileUp },
     { to: '/documents', label: t('nav.documents'), icon: FileText },
     { to: '/review', label: t('nav.review'), icon: CheckSquare },
@@ -73,7 +76,6 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange, onSta
     isRouteAllowedForRole(link.to, currentUser?.role)
   )
 
-  const isHindi = i18n.language === 'hi'
   const currentRoleCfg = currentUser?.role ? ROLES[currentUser.role] : null
 
   return (
