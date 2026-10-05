@@ -9,10 +9,27 @@ import {
   ArrowUpRight,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { getStoredUser } from '../api'
 
 export const DashboardPage: React.FC = () => {
   const { t, i18n } = useTranslation()
   const isHindi = i18n.language === 'hi'
+  const user = getStoredUser()
+  const isDistrictOfficer = user?.role === 'district_officer'
+
+  const title = isDistrictOfficer
+    ? (isHindi ? 'जिला राजस्व मूल्यांकन एवं डिजिटलीकरण डैशबोर्ड' : 'District Revenue Digitization & KPI Dashboard')
+    : t('dashboard.title')
+
+  const roleBadge = isDistrictOfficer
+    ? (isHindi ? 'जिला राजस्व अधिकारी (लखनऊ)' : 'District Officer (Lucknow - 0901)')
+    : t('dashboard.roleBadge')
+
+  const jurisdiction = isDistrictOfficer
+    ? (isHindi
+        ? 'जिला ०९०१ (लखनऊ) · ५ तहसीलें (सदर, मलिहाबाद, बीकेटी, मोहनलालगंज, सरोजनीनगर) · कैडेस्ट्रल मानचित्र समन्वय'
+        : 'District 0901 (Lucknow) · 5 Tehsils Monitored · Cadastral Vector GIS Sync Active')
+    : t('dashboard.jurisdiction')
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -39,14 +56,14 @@ export const DashboardPage: React.FC = () => {
                 <BarChart3 className="w-5 h-5" />
               </span>
               <h1 className="text-xl font-bold text-white tracking-tight">
-                {t('dashboard.title')}
+                {title}
               </h1>
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-400/30 text-purple-300 font-mono">
-                {t('dashboard.roleBadge')}
+                {roleBadge}
               </span>
             </div>
             <p className="text-xs text-slate-300 max-w-xl">
-              {t('dashboard.jurisdiction')}
+              {jurisdiction}
             </p>
           </div>
 

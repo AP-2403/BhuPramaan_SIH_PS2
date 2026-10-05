@@ -40,9 +40,9 @@ export const ROLES: Record<string, RoleConfig> = {
     titleHindi: 'जिला राजस्व अधिकारी',
     badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
     scope: 'District 0901 (Lucknow)',
-    desc: 'District-level KPI dashboards, cadastral GIS map, and final record approvals',
-    defaultRoute: '/dashboard',
-    allowedRoutes: ['/dashboard', '/records', '/map', '/documents'],
+    desc: 'Cadastral GIS map inspection, parcel geometry approval, and district verification',
+    defaultRoute: '/map',
+    allowedRoutes: ['/map', '/dashboard', '/records', '/documents'],
   },
   state_officer: {
     role: 'state_officer',
