@@ -10,7 +10,6 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
-  Sun,
   ShieldCheck,
   CheckCircle2,
 } from 'lucide-react'
@@ -35,7 +34,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'roles' | 'credentials'>('roles')
-  const [lightIntensity, setLightIntensity] = useState<'radiant' | 'subtle'>('radiant')
+  const lightIntensity = 'radiant'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -134,25 +133,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       <div className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-1 flex flex-col justify-between space-y-10">
         {/* ── TOP WELCOMING HERO BAR ─────────────────────────────────────── */}
         <div className="text-center space-y-3 pt-2">
-          {/* Floating Pill with Light Controller */}
-          <div className="inline-flex items-center gap-2 p-1 pl-3.5 pr-1.5 rounded-full bg-slate-950/80 border border-amber-500/40 backdrop-blur-xl shadow-xl shadow-amber-500/10">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-xs font-bold text-amber-300 tracking-wide">
-              {isHindi
-                ? 'स्मार्ट इंडिया हैकथॉन (SIH PS-2) · डिजिटल भारत भू-अभिलेख'
-                : 'Smart India Hackathon (SIH PS-2) · DILRMP Operational Core'}
-            </span>
-            <span className="text-slate-600">|</span>
-            <button
-              onClick={() => setLightIntensity(lightIntensity === 'radiant' ? 'subtle' : 'radiant')}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[11px] font-bold border border-amber-400/40 transition-all cursor-pointer"
-              title="Toggle Bridge Spotlight Illumination"
-            >
-              <Sun className="w-3 h-3 text-amber-300" />
-              <span>{lightIntensity === 'radiant' ? 'Radiant Glow' : 'Subtle Light'}</span>
-            </button>
-          </div>
-
           {/* Grand Modern Title */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white drop-shadow-md">
             {isHindi ? (
@@ -172,18 +152,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               ? 'ऐतिहासिक खतौनी, म्यूटेशन व मानचित्रों का द्वैध-ओसीआर मतदान, १७ वैधानिक नियमों एवं पोस्टजीआईएस द्वारा स्वचालित सत्यापन।'
               : 'Autonomous land record digitization, dual-engine OCR spatial voting, 17-rule statutory validation, and PostGIS cadastral GIS alignment.'}
           </p>
-
-          {/* Interactive Bridge Badge Callout */}
-          <div className="pt-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-[11px] text-amber-300 backdrop-blur-md shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '8s' }} />
-              <span>
-                {isHindi
-                  ? 'केंद्रीय सेतु के शिखर पर स्थित मुहर: डिजिटल भारत भू-अभिलेख सत्यापन का प्रतीक'
-                  : 'Illuminating the BhuPramaan Verified Seal crowning the central bridge gateway'}
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* ── MODERN ACCESS HUB: GLASS CONTAINER WITH TABS ───────────────── */}
